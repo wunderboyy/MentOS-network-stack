@@ -1,0 +1,6 @@
+
+
+
+struct ifnet {
+  char *name;
+};

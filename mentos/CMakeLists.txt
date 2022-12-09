@@ -179,6 +179,12 @@ set(KERNEL_SOURCES
     src/system/syscall.c
 )
 
+file(GLOB net_files "src/net/*.c")
+set(KERNEL_SOURCES
+    ${KERNEL_SOURCES}
+    ${net_files}
+)
+
 # =============================================================================
 # Add kernel library.
 if(USE_BUDDY_SYSTEM)
