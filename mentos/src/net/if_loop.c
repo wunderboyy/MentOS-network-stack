@@ -1,4 +1,5 @@
 #include "net/if.h"
+#include "net/netisr.h"
 #include "stddef.h"
 
 #define LOMTU 1500
@@ -24,5 +25,6 @@ loopattach(void)
 int
 looutput(struct ifnet* ifp, void* x, void* y, void* u)
 {
+  schednetisr(NETISR_IP);
   return 0;
 }

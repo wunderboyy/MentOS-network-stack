@@ -4,6 +4,8 @@
 ; @copyright (c) 2014-2021 This file is distributed under the MIT License.
 ; See LICENSE.md for details.
 
+
+	
 extern irq_handler
 
 %macro IRQ 2
@@ -17,11 +19,15 @@ extern irq_handler
         jmp irq_common
 %endmacro
 
+	
+
 ; -----------------------------------------------------------------------------
 ; SECTION (text)
 ; -----------------------------------------------------------------------------
 section .text
+	
 
+	
 ; 32 is the first irq, 47 is the last one. DO NOT CHANGE THESE NUMBERS. 
 IRQ 0, 32
 IRQ 1, 33

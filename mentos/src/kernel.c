@@ -139,6 +139,9 @@ kmain(boot_info_t* boot_informations)
   // work properly.
   keyboard_disable();
 
+  __asm__("sti");
+  __asm__("cli");
+
   //==========================================================================
   pr_notice("Initialize the video...\n");
   vga_initialize();
@@ -151,6 +154,8 @@ kmain(boot_info_t* boot_informations)
   printf("Initialize network..");
   print_ok();
 
+  looutput(0, 0, 0, 0);
+  
   //==========================================================================
   printf(OS_NAME " " OS_VERSION);
   printf("\nSite:");

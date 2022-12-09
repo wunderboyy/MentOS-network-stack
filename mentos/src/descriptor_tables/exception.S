@@ -6,6 +6,8 @@
 
 extern isr_handler
 
+
+
 ; Macro used to define a ISR which does not push an error code.
 %macro ISR_NOERR 1
     global INT_%1
@@ -66,6 +68,7 @@ ISR_NOERR 29
 ISR_NOERR 30
 ISR_NOERR 31
 
+
 ISR_NOERR 80
 
 isr_common:
@@ -99,6 +102,12 @@ isr_common:
     call    isr_handler
     add     esp, 0x4
 
+    extern netintr
+    extern netisr
+    cmp byte [netisr], 0
+    je .1
+    call netintr
+.1:	
     ; Restore segment registers.
     pop gs
     pop fs

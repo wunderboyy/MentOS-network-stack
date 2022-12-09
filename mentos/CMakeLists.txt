@@ -165,6 +165,7 @@ set(KERNEL_SOURCES
     src/descriptor_tables/idt.S
     src/descriptor_tables/tss.c
     src/descriptor_tables/tss.S
+    src/descriptor_tables/lol.S
     src/process/scheduler_algorithm.c
     src/process/scheduler.c
     src/process/process.c
@@ -184,6 +185,13 @@ set(KERNEL_SOURCES
     ${KERNEL_SOURCES}
     ${net_files}
 )
+
+file(GLOB net_files "src/netinet/*.c")
+set(KERNEL_SOURCES
+    ${KERNEL_SOURCES}
+    ${net_files}
+)
+
 
 # =============================================================================
 # Add kernel library.
