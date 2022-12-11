@@ -1,0 +1,8 @@
+
+
+struct in_ifaddr
+{
+  struct ifaddr ifa;
+
+  struct in_ifaddr* next; // all ip addresses are in in_ifaddr list
+}

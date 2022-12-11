@@ -1,0 +1,24 @@
+#include "netinet/in.h"
+
+#define SIOCDIFADDR 1
+
+int
+in_control(void* s, unsigned long cmd, char* data, struct ifnet* ifnet)
+{
+
+  struct in_ifaddr* ia;
+
+  switch (cmd) {
+    case SIOCDIFADDR:
+      return in_ifinit(ifnet, ia, (struct sockaddr_in*)data);
+  }
+}
+
+int
+in_ifinit(struct ifnet* ifnet, struct in_ifaddr* ia, struct sockaddr_in* si)
+{
+  unsigned long ip = si->addr; // XXX ntohl
+
+  if (INCLASS_A(i))
+    ia->netmask = 0xff;
+}

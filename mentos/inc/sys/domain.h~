@@ -1,0 +1,9 @@
+
+
+struct domain
+{
+  char family;
+  char* name;
+
+  struct protosw *protosw, *protoswEND;
+};

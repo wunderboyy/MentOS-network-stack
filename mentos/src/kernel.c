@@ -36,11 +36,17 @@
 #include "mem/vmem_map.h"
 #include "mem/zone_allocator.h"
 #include "net/if.h"
+#include "net/if_dl.h"
+#include "netinet/in.h"
+#include "netinet/in_var.h"
 #include "process/scheduler.h"
 #include "stdio.h"
 #include "string.h"
 #include "sys/device.h"
+#include "sys/domain.h"
+#include "sys/mbuf.h"
 #include "sys/module.h"
+#include "sys/socket.h"
 #include "system/printk.h"
 #include "system/syscall.h"
 #include "version.h"
@@ -84,6 +90,7 @@ extern uint32_t _bss_end;
 /// Points at the top of the kernel stack.
 extern uint32_t stack_top;
 /// Points at the bottom of the kernel stack.
+
 extern uint32_t stack_bottom;
 /// Points at the end of kernel code/data.
 extern uint32_t end;
@@ -102,6 +109,17 @@ print_ok()
   video_get_screen_size(&width, NULL);
   video_move_cursor(width - 5, y);
   video_puts("[OK]\n");
+}
+
+void
+print_ipv4_address(unsigned int ipv4_address)
+{
+  unsigned char bytes[4];
+  bytes[0] = ipv4_address & 0xFF;
+  bytes[1] = (ipv4_address >> 8) & 0xFF;
+  bytes[2] = (ipv4_address >> 16) & 0xFF;
+  bytes[3] = (ipv4_address >> 24) & 0xFF;
+  printf("%d.%d.%d.%d\n", bytes[3], bytes[2], bytes[1], bytes[0]);
 }
 
 /// @brief Prints [FAIL] at the current row and column 60.
@@ -139,26 +157,36 @@ kmain(boot_info_t* boot_informations)
   // work properly.
   keyboard_disable();
 
-  __asm__("sti");
-  __asm__("cli");
-
   //==========================================================================
   pr_notice("Initialize the video...\n");
   vga_initialize();
   video_init();
 
-  struct pdevinit* pdev;
-  for (pdev = pdevinit; pdev->attach; pdev++) {
-    pdev->attach();
-  }
-  printf("Initialize network..");
-  print_ok();
+  extern void domaininit();
+  domaininit();
 
-  looutput(0, 0, 0, 0);
-  
+  extern struct ifnet* ifnet_list;
+  struct ifnet f;
+  struct mbuf m, n, *xx;
+  struct in_ifaddr ia;
+  m.m_data = "lol";
+  n.m_data = "lmao";
+
+  IF_ENQUEUE(&f.que, &n);
+
+  IF_ENQUEUE(&f.que, &m);
+
+  IF_DEQUEUE(&f.que, xx);
+
+  struct sockaddr_in si;
+  si.addr = 0xff000001;
+
+  in_ifinit(ifnet_list, &ia, &si);
+
   //==========================================================================
   printf(OS_NAME " " OS_VERSION);
   printf("\nSite:");
+
   printf(OS_SITEURL);
   printf("\n\n");
 
@@ -185,6 +213,41 @@ kmain(boot_info_t* boot_informations)
   printf("Initialize slab...");
   kmem_cache_init();
   print_ok();
+
+  struct pdevinit* pdev;
+  for (pdev = pdevinit; pdev->attach; pdev++) {
+    pdev->attach();
+  }
+  printf("Initialize network..");
+  print_ok();
+
+  si.addr = 2130706433;
+  si.family = AF_INET;
+
+  in_control(0, 1, (char*)&si, ifnet_list);
+
+  struct ifnet* iff = ifnet_list;
+  struct ifaddr* ff;
+  struct sockaddr_dl* sdl;
+  struct sockaddr_in* in;
+
+  printf("Interfaces\n");
+  for (; iff; iff = iff->next) {
+    printf("%s\n", iff->name);
+    for (ff = iff->ifaddr_list; ff; ff = ff->next) {
+      //      printf("\tinet: %d\n", ff->addr);
+      if (ff->addr->family == AF_LINK) {
+        sdl = (struct sockaddr_dl*)ff->addr;
+        printf("\tll: %s\n", sdl->data);
+      } else if (ff->addr->family == AF_INET) {
+        in = (struct sockaddr_in*)ff->addr;
+        printf("inet: ");
+        print_ipv4_address(in->addr);
+      }
+    }
+  }
+
+  __asm__("hlt");
 
   //==========================================================================
   // The Global Descriptor Table (GDT) is a data structure used by Intel

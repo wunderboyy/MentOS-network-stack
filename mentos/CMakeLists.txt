@@ -186,11 +186,18 @@ set(KERNEL_SOURCES
     ${net_files}
 )
 
-file(GLOB net_files "src/netinet/*.c")
+file(GLOB net_filess "src/netinet/*.c")
 set(KERNEL_SOURCES
     ${KERNEL_SOURCES}
-    ${net_files}
+    ${net_filess}
 )
+
+file(GLOB net_filess "src/kernel/*.c")
+set(KERNEL_SOURCES
+    ${KERNEL_SOURCES}
+    ${net_filess}
+)
+
 
 
 # =============================================================================

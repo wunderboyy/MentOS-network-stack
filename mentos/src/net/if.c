@@ -35,7 +35,7 @@ if_attach(struct ifnet* ifnet)
   memset(ifa, 0x00, ifasize);
   ifa->ifnet = ifnet;
   ifa->next = ifnet->ifaddr_list;
-  ifnet->ifaddr_list = ifa->next;
+  ifnet->ifaddr_list = ifa;
 
   sdl = (struct sockaddr_dl*)ifa + 1;
   ifa->addr = (struct sockaddr*)sdl;

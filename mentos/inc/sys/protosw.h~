@@ -1,0 +1,8 @@
+
+
+struct domain;
+
+struct protosw
+{
+  struct domain* dom;
+};
