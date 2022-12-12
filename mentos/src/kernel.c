@@ -39,11 +39,13 @@
 #include "net/if_dl.h"
 #include "netinet/in.h"
 #include "netinet/in_var.h"
+#include "netinet/ip.h"
 #include "process/scheduler.h"
 #include "stdio.h"
 #include "string.h"
 #include "sys/device.h"
 #include "sys/domain.h"
+#include "sys/endian.h"
 #include "sys/mbuf.h"
 #include "sys/module.h"
 #include "sys/socket.h"
@@ -214,6 +216,19 @@ kmain(boot_info_t* boot_informations)
   kmem_cache_init();
   print_ok();
 
+  extern int ip_output(struct mbuf*, int);
+
+  char ma[30];
+  struct ip ipp;
+  ipp.dst = 0x7f000001;
+  ipp.proto = IPPROTO_UDP;
+  struct mbuf* buf = mgethdr(MT_DATA);
+
+  M_ALIGN(buf, 50);
+  memcpy(buf->m_data, &ipp, 20);
+  memcpy(buf->m_data + 20, &ma, 30);
+  buf->m_len = 50;
+
   struct pdevinit* pdev;
   for (pdev = pdevinit; pdev->attach; pdev++) {
     pdev->attach();
@@ -223,8 +238,10 @@ kmain(boot_info_t* boot_informations)
 
   si.addr = 2130706433;
   si.family = AF_INET;
+  si.len = sizeof(struct sockaddr_in);
 
   in_control(0, 1, (char*)&si, ifnet_list);
+  ip_output(buf, 0x0010);
 
   struct ifnet* iff = ifnet_list;
   struct ifaddr* ff;
@@ -247,7 +264,41 @@ kmain(boot_info_t* boot_informations)
     }
   }
 
-  __asm__("hlt");
+  struct mbuf* w = mgethdr(MT_DATA);
+
+  extern struct ifaddr* if_getifaddr(struct sockaddr*);
+
+  struct sockaddr_in ih;
+  struct sockaddr dll, mn;
+
+  ih.addr = 2130706433;
+  ih.family = AF_INET;
+  ih.len = sizeof(struct sockaddr_in);
+
+  struct ifaddr* ka = if_getifaddr((struct sockaddr*)&ih);
+  extern int ip_output(struct mbuf*, int);
+
+  dll.family = AF_INET;
+  xx = mgethdr(MT_DATA);
+  strcpy(xx->m_data, "kimmo");
+  looutput(ifnet_list, xx, &dll, 0);
+  strcpy(w->m_data, "nicemate");
+  struct ip ip;
+  ip.dst = 2130706433;
+  ip.version = 4;
+  ip.hl = 0x5;
+  ip.len = LITTLETOBIG16(20);
+  ip.off = 0;
+  ip.proto = IPPROTO_UDP;
+  ip.id = LITTLETOBIG16(1);
+  w->m_len = 100;
+  w->m_pkthdr.len = 100;
+  memcpy(w->m_data, &ip, sizeof(ip));
+
+  ip_output(w, 0x0010);
+  looutput(ifnet_list, w, &dll, 0);
+
+  //  __asm__("hlt");
 
   //==========================================================================
   // The Global Descriptor Table (GDT) is a data structure used by Intel

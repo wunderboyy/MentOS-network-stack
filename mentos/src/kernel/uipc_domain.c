@@ -23,7 +23,7 @@ domaininit(void)
 }
 
 struct protosw*
-pffindtype(char family, char type)
+pffindtype(unsigned char family, unsigned char type)
 {
   struct protosw* p;
   struct domain* d;
@@ -40,7 +40,7 @@ found:
 }
 
 struct protosw*
-pffindproto(char family, char proto, char type)
+pffindproto(unsigned char family, unsigned char proto, unsigned char type)
 {
 
   struct protosw *p, *maybe;

@@ -52,3 +52,18 @@ if_attach(struct ifnet* ifnet)
   sdl->len = socksize - ifnet->addrlen;
   memset(sdl->data, 0xff, namelen + unitlen);
 }
+
+// find an ifaddr with addr
+struct ifaddr*
+if_getifaddr(struct sockaddr* addr)
+{
+  struct ifnet* ifnet;
+  struct ifaddr* ifa;
+
+  for (ifnet = ifnet_list; ifnet; ifnet = ifnet->next)
+    for (ifa = ifnet->ifaddr_list; ifa; ifa = ifa->next)
+      if (ifa->addr->family == addr->family)
+        if (memcmp(ifa->addr, addr, addr->len) == 0)
+          return ifa;
+  return NULL;
+}

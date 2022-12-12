@@ -5,12 +5,24 @@
 #include "sys/socket.h"
 
 extern struct domain inetdomain;
+extern void
+ipinit(void);
 
-struct protosw inetsw[] = { { &inetdomain, 0, 0 },
+int
+kk()
+{
+  int x = 10;
+  return 0;
+}
+
+struct protosw inetsw[] = { { &inetdomain, 0, 0, ipinit },
                             {
                               &inetdomain,
                               SOCK_DGRAM,
                               IPPROTO_UDP,
+                              0,
+                              0,
+                              kk,
                             },
                             { &inetdomain, SOCK_STREAM, IPPROTO_TCP },
                             { &inetdomain, SOCK_RAW, IPPROTO_RAW } };

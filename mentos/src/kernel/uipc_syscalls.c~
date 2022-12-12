@@ -1,0 +1,7 @@
+#include "fs/vfs_types.h"
+
+// getsock(filedesc[], fd, **file)
+// get file
+int
+getsock()
+{}

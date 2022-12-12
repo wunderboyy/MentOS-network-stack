@@ -1,8 +1,5 @@
 
 
-#define IP_FORWARDING 1     // this packet is being forwarded
-#define IP_RAWOUTPUT 2      // packet contains a preconstructed ip header
-#define IP_ROUTETOIF 0x0010 // route packet straight to an interface
 
 #define IPPROTO_MAX 256
 #define IPPROTO_RAW 255

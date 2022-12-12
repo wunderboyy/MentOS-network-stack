@@ -1,0 +1,9 @@
+
+
+struct ip
+{
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+  unsigned char hl : 4, version : 4;
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  unsigned char version : 4, hl : 4;
+}

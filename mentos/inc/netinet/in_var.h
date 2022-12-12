@@ -3,6 +3,7 @@
 struct in_ifaddr
 {
   struct ifaddr ifa;
+#define in_ifnet ifa.ifnet
 
   // unsigned longs are stored in host byte order
   // sockaddr_in addresses are in network byte order
@@ -16,7 +17,8 @@ struct in_ifaddr
 
   struct in_ifaddr* next; // all ip addresses are in in_ifaddr list
   struct sockaddr_in addr;
-  struct sockaddr_in dstaddr;  // 127.0.0.1
+  struct sockaddr_in dstaddr; // 127.0.0.1
+#define in_broadaddr dstaddr
   struct sockaddr_in sockmask; // 255.0.0.0
 };
 

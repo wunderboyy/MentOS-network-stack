@@ -1,0 +1,4 @@
+
+
+// 16 bit little endian to big endian
+#define ltobs(x) ((((x)&0xff) << 8) | (((x)&0xff00) >> 8))

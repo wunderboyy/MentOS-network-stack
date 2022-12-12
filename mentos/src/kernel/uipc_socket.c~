@@ -1,0 +1,8 @@
+#include "sys/socketvar.h"
+
+void
+socreate(unsigned char domain,
+         struct socket* so,
+         unsigned char type,
+         unsigned char proto)
+{}

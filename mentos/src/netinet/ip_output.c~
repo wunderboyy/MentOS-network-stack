@@ -1,0 +1,44 @@
+#include "net/if.h"
+#include "netinet/in.h"
+#include "netinet/ip.h"
+#include "sys/mbuf.h"
+
+#define IP_FORWARDING 1 // this packet is being forwarded
+#define IP_RAWOUTPUT 2  // packet contains a preconstructed ip header
+#define IP_ROUTETOIF 3  // route packet straight to an interface
+
+static unsigned short ip_id = 1;
+
+struct sockaddr_in iproute;
+
+// m mbuf already contains an ip packet, but not all fields are filled (eg
+// src)
+void
+ip_output(struct mbuf* m, int flags)
+{
+  struct ip* ip;
+  struct sockaddr_in* dst;
+  int hlen = sizeof(struct ip);
+
+  // TODO: check options
+
+  ip = (struct ip*)mtod(m);
+
+  if ((flags & (IP_FORWARDING | IP_RAWOUTPUT)) == 0) {
+    ip->version = IPVERSION;
+    ip->id = ip_id++; // TODO: check for overflow
+    ip->hl = hlen / 4;
+  } else {
+  }
+
+  // TODO: routing code
+
+  dst = &iproute;
+
+  dst->family = AF_INET;
+  dst->len = sizeof *dst;
+  dst->addr = ip->dst;
+
+  if (flags & IP_ROUTETOIF) {
+  }
+}

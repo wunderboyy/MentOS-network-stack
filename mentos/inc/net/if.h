@@ -34,7 +34,7 @@ struct ifnet
 };
 
 #define IFF_LOOPBACK 0x1
-#define IFF_BROADCAST 0x2
+#define IFF_BROADCAST 0x2 // supports broadcast
 #define IFF_POINTOPOINT 0x3
 
 #define QUEMAXLEN 50
@@ -79,3 +79,6 @@ void
 loopattach(void);
 int
 looutput(struct ifnet*, struct mbuf*, struct sockaddr*, void*);
+
+struct ifaddr*
+if_getifaddr(struct sockaddr*);
