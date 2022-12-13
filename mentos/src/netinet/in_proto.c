@@ -8,6 +8,12 @@ extern struct domain inetdomain;
 extern void
 ipinit(void);
 
+extern int
+udp_input(struct mbuf*, int);
+
+extern int
+udp_usrreq();
+
 int
 kk()
 {
@@ -23,8 +29,8 @@ struct protosw inetsw[] = { { &inetdomain, 0, 0, 0, ipinit },
                               PR_ATOMIC,
                               0,
                               0,
-                              kk,
-                              kk,
+                              udp_input,
+                              udp_usrreq,
                             },
                             { &inetdomain, SOCK_STREAM, IPPROTO_TCP },
                             { &inetdomain, SOCK_RAW, IPPROTO_RAW } };

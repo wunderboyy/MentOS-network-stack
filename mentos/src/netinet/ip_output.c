@@ -43,7 +43,6 @@ ip_output(struct mbuf* m, int flags)
   if (flags & IP_ROUTETOIF) {
     ifa = if_getifaddr((struct sockaddr*)dst); // TODO: slip
     if (ifa == NULL) {
-      mfree_m(m);
       return ENETUNREACH;
     }
     ifnet = ifa->ifnet;

@@ -9,18 +9,25 @@
 #include "sys/socketvar.h"
 #include "string.h"
 #include "netinet/in_var.h"
+#include "sys/protosw.h"
 
 int
 in_pcballoc(struct socket* so, struct inpcb* head)
 {
-  struct inpcb* in;
+  struct inpcb *in, *in2;
 
-  in = kmalloc(10);
+  in = kmalloc(sizeof(struct inpcb));
   if (in == NULL)
     return ENOBUFS;
   memset(in, 0, sizeof(struct inpcb));
 
+  in2 = head;
+  while (in2->next && (in2 = in2->next))
+    ;
+  in2->next = in;
+  in->prev = in2;
   in->head = head;
+
   in->so = so;
   so->pcb = in;
   return 0;
@@ -53,7 +60,7 @@ in_pcbbind(struct inpcb* in, struct mbuf* m)
 
   if (m) {
     sin = (struct sockaddr_in*)mtod(m);
-    if (sin->len != sizeof(struct sockaddr_in*))
+    if (sin->len != sizeof(struct sockaddr_in))
       return EINVAL;
 
     lport = sin->port;
@@ -69,7 +76,9 @@ in_pcbbind(struct inpcb* in, struct mbuf* m)
     }
   }
   // TODO: random port
-
+  if (lport == 0) {
+  }
+  in->lport = lport;
   return 0;
 }
 
@@ -88,7 +97,7 @@ in_pcbconnect(struct inpcb* in, struct mbuf* m)
 
   if (sin->len != sizeof(struct sockaddr_in))
     return EINVAL;
-  if (sin->family == AF_INET)
+  if (sin->family != AF_INET)
     return EAFNOSUPPORT;
   if (sin->port == 0)
     return EADDRNOTAVAIL;
@@ -121,7 +130,7 @@ in_pcbconnect(struct inpcb* in, struct mbuf* m)
     in->laddr = ia->addr.addr;
   }
   in->faddr = sin->addr;
-  in->fport = fport;
+  in->fport = sin->port;
   return 0;
 }
 
@@ -144,7 +153,7 @@ in_pcblookup(struct inpcb* head,
              unsigned short fport,
              int flags)
 {
-  struct inpcb *in, *match;
+  struct inpcb *in, *match = NULL;
   int wildcard, matchwild = 3;
 
 #define WILDCARD 1

@@ -86,6 +86,8 @@ set(PROGRAMS
     man.c
     edit.c
     uptime.c
+    net.c
+    server.c
 )
 
 foreach(PROGRAM ${PROGRAMS})

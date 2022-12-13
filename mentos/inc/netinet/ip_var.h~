@@ -1,0 +1,12 @@
+
+
+// used in udp checksum
+struct iply
+{
+  char *n, n2;
+  char x1;
+  char proto;
+  short len;
+  unsigned long src;
+  unsigned long dst;
+};

@@ -1,4 +1,5 @@
 #include "mem/slab.h"
+#include "string.h"
 
 #define MSIZE 128
 
@@ -99,6 +100,7 @@ static inline struct mbuf*
 mget(char type)
 {
   struct mbuf* m = kmalloc(sizeof(struct mbuf));
+  memset(m, 0, sizeof(struct mbuf));
   if (m) {
     m->m_type = type;
     m->m_data = m->u.databuf;
@@ -113,6 +115,7 @@ static inline struct mbuf*
 mgethdr(char type)
 {
   struct mbuf* m = kmalloc(sizeof(struct mbuf));
+  memset(m, 0, sizeof(struct mbuf));
   if (m) {
     m->m_type = type;
     m->m_data = m->u.p.databuf;

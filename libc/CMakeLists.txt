@@ -139,6 +139,7 @@ add_library(
     ${PROJECT_SOURCE_DIR}/src/libc_start.c
     ${PROJECT_SOURCE_DIR}/src/debug.c
     ${PROJECT_SOURCE_DIR}/src/crt0.S
+    ${PROJECT_SOURCE_DIR}/src/sys/socket.c
 )
 
 # Add the includes.

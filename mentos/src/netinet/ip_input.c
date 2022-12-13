@@ -113,7 +113,7 @@ ours:
   // TODO: check for fragmentation
   ip->len -= hlen;
 
-  inetsw[ip_protox[ip->proto]].input();
+  inetsw[ip_protox[ip->proto]].input(m, hlen);
   goto next;
 fail:
   //  mfree_m(m);

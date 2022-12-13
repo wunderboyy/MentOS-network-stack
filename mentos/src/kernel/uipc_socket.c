@@ -27,6 +27,8 @@ socreate(unsigned char domain,
   memset(sock, 0x0, sizeof(struct socket));
   sock->type = type;
   sock->proto = proto;
+  sock->snd.maxlen = 100;
+  sock->rcv.maxlen = 100;
   proto->usrreq(sock, PRU_ATTACH, NULL, (struct mbuf*)proto, NULL);
   *so = sock;
   return 0;
@@ -67,7 +69,7 @@ sosend(struct socket* so,
   mp = &top;
   do {
     if (top == NULL) {
-      m = mget(MT_DATA);
+      m = mgethdr(MT_DATA);
       mlen = MHLEN;
     } else {
       m = mget(MT_DATA);
@@ -97,6 +99,7 @@ sosend(struct socket* so,
     so->options = SO_DONTROUTE;
   // TODO: splnet()
   so->proto->usrreq(so, PRU_SEND, top, to, NULL);
+  top = NULL;
 
   // TODO: unlock snd
 
@@ -105,6 +108,7 @@ sosend(struct socket* so,
   return 0;
 }
 
+// collect data from the receive mbuf chain to buf for blen amount
 int
 soreceive(struct socket* so, char* buf, int blen, int* flags)
 {

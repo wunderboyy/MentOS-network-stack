@@ -137,6 +137,10 @@ struct vfs_file_t
   list_head siblings;
   /// TODO: Comment.
   int32_t refcount;
+
+  void* data; // socket
+
+  int type;
 };
 
 /// @brief A structure that represents an instance of a filesystem, i.e., a

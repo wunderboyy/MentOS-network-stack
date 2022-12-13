@@ -17,3 +17,15 @@ struct sockaddr
 
   char data[14];
 };
+
+int
+sys_socket(int, int, int);
+
+int
+sys_bind(int, struct sockaddr*, int);
+
+int
+sys_sendto(int, void*, int, struct sockaddr*, int);
+
+int
+sys_recvfrom(int, void*, int, struct sockaddr*, int);

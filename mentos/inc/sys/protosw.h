@@ -22,6 +22,7 @@ struct protosw
 #define PRU_ATTACH 0
 #define PRU_BIND 1
 #define PRU_SEND 2
+#define PRU_CONNECT 3
 
 struct protosw*
 pffindtype(unsigned char, unsigned char);

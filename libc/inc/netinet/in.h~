@@ -1,0 +1,10 @@
+
+
+struct sockaddr_in
+{
+  char len;    // 16
+  char family; // AF_INET
+  short port;
+  unsigned long addr;
+  char zero[8];
+};

@@ -224,11 +224,11 @@ kmain(boot_info_t* boot_informations)
   struct ip ipp;
   ipp.dst = 0x7f000001;
   ipp.proto = IPPROTO_UDP;
-  struct mbuf* buf = mgethdr(MT_DATA);
+  struct mbuf* buf = NULL;
 
-  M_ALIGN(buf, 50);
-  memcpy(buf->m_data, &ipp, 20);
-  memcpy(buf->m_data + 20, &ma, 30);
+  //  M_ALIGN(buf, 50);
+  //  memcpy(buf->m_data, &ipp, 20);
+  //  memcpy(buf->m_data + 20, &ma, 30);
   buf->m_len = 50;
 
   struct pdevinit* pdev;
@@ -251,22 +251,8 @@ kmain(boot_info_t* boot_informations)
   struct sockaddr_in* in;
 
   printf("Interfaces\n");
-  for (; iff; iff = iff->next) {
-    printf("%s\n", iff->name);
-    for (ff = iff->ifaddr_list; ff; ff = ff->next) {
-      //      printf("\tinet: %d\n", ff->addr);
-      if (ff->addr->family == AF_LINK) {
-        sdl = (struct sockaddr_dl*)ff->addr;
-        printf("\tll: %s\n", sdl->data);
-      } else if (ff->addr->family == AF_INET) {
-        in = (struct sockaddr_in*)ff->addr;
-        printf("inet: ");
-        print_ipv4_address(in->addr);
-      }
-    }
-  }
 
-  struct mbuf* w = mgethdr(MT_DATA);
+  struct mbuf* w = NULL;
 
   extern struct ifaddr* if_getifaddr(struct sockaddr*);
 
@@ -277,7 +263,7 @@ kmain(boot_info_t* boot_informations)
   ih.family = AF_INET;
   ih.len = sizeof(struct sockaddr_in);
 
-  struct ifaddr* ka = if_getifaddr((struct sockaddr*)&ih);
+  struct ifaddr* ka = NULL;
   extern int ip_output(struct mbuf*, int);
 
   dll.family = AF_INET;
@@ -304,15 +290,15 @@ kmain(boot_info_t* boot_informations)
 
   extern int sosend(
     struct socket*, struct mbuf*, char*, int, struct mbuf*, int);
-  extern int socreate(
-    unsigned char, struct socket**, unsigned char, unsigned char);
-  struct socket* oo;
+
+  struct socket* oo = NULL;
   socreate(AF_INET, &oo, SOCK_DGRAM, 0);
   oo->snd.maxlen = 6900;
   struct mbuf* ei = mgethdr(MT_DATA);
-  struct sockaddr_in socker = {
-    .addr = 0xff,
-  };
+  struct sockaddr_in socker = { .addr = 0xff,
+                                .len = sizeof(struct sockaddr_in),
+                                .port = 80 };
+
   M_ALIGN(ei, sizeof(struct sockaddr_in));
   memcpy(ei->m_data, &socker, sizeof(struct sockaddr_in));
   char* vaa = kmalloc(200);
@@ -336,10 +322,11 @@ kmain(boot_info_t* boot_informations)
 
   // socket 1
   i1.laddr = INADDR_ANY;
-  i1.lport = 7000;
+  i1.lport = 6969;
   i1.faddr = 0x7f000001;
   i1.fport = 80;
   i1.next = &i2;
+  i1.ip.dst = 699;
 
   // socket 2
 
@@ -349,6 +336,19 @@ kmain(boot_info_t* boot_informations)
   i2.fport = 80;
 
   in_pcblookup(&i1, 0x7f000001, 7000, 0x7f000001, 80, 0);
+
+  int udp_output(struct inpcb * in, struct mbuf * m, struct mbuf * addr);
+  struct mbuf* bitch = NULL;
+  M_ALIGN(bitch, 10);
+
+  extern int in_pcballoc(struct socket * so, struct inpcb * head);
+
+  struct socket *shakira, ulol;
+  socreate(AF_INET, &shakira, SOCK_DGRAM, 0);
+  extern struct inpcb udp;
+  in_pcballoc(shakira, &udp);
+
+  udp_output(&i1, bitch, 0);
 
   //==========================================================================
   // The Global Descriptor Table (GDT) is a data structure used by Intel

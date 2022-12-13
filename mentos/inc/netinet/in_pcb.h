@@ -4,6 +4,7 @@ struct inpcb
 {
   struct inpcb *next, *prev, *head;
 
+  // network byte order!
   unsigned long faddr;  // foreign address
   unsigned short fport; // foreign port
   unsigned long laddr;  // local address
@@ -19,6 +20,9 @@ struct inpcb
 int
 in_pcbbind(struct inpcb* in, struct mbuf* m);
 
+int
+in_pcbconnect(struct inpcb* in, struct mbuf* m);
+
 struct inpcb*
 in_pcblookup(struct inpcb* head,
              unsigned long laddr,
@@ -26,3 +30,6 @@ in_pcblookup(struct inpcb* head,
              unsigned long faddr,
              unsigned short fport,
              int flags);
+
+int
+in_pcballoc(struct socket* so, struct inpcb* head);
