@@ -125,9 +125,9 @@ mgethdr(char type)
 
 // free a single mbuf, return next mbuf in chain in n
 static inline void
-mfree(struct mbuf* m, struct mbuf* n)
+mfree(struct mbuf* m, struct mbuf** n)
 {
-  n = m->m_nextpkt;
+  *n = m->m_next;
   kfree(m);
 }
 
@@ -139,7 +139,7 @@ mfree_m(struct mbuf* m)
   if (m == NULL)
     return;
   do {
-    mfree(m, n);
+    mfree(m, &n);
   } while ((m = n));
 }
 

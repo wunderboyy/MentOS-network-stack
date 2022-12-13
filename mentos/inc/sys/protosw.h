@@ -6,8 +6,9 @@ struct socket;
 struct protosw
 {
   struct domain* dom;
-  char type;
+  unsigned char type;
   unsigned char protocol;
+  char flags;
 
   void (*init)();
   int (*ctlinput)();
@@ -16,8 +17,11 @@ struct protosw
     *usrreq)(struct socket*, int req, struct mbuf*, struct mbuf*, struct mbuf*);
 };
 
+#define PR_ATOMIC 1
+
 #define PRU_ATTACH 0
 #define PRU_BIND 1
+#define PRU_SEND 2
 
 struct protosw*
 pffindtype(unsigned char, unsigned char);

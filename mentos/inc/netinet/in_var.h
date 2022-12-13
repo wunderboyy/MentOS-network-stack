@@ -1,5 +1,7 @@
 
 
+extern struct in_ifaddr* in_ifaddr;
+
 struct in_ifaddr
 {
   struct ifaddr ifa;

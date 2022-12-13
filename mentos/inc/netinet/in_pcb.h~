@@ -1,0 +1,15 @@
+
+
+struct inpcb
+{
+  struct inpcb *next, *prev, *head;
+
+  unsigned long faddr;  // foreign address
+  unsigned short fport; // foreign port
+  unsigned long laddr;  // local address
+  unsigned long lport;  // local port
+
+  struct socket* so;
+  void* pcb;    // protocol specific
+  struct ip ip; // prototype used when creating ip packets
+};

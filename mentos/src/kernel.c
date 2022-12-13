@@ -40,6 +40,7 @@
 #include "netinet/in.h"
 #include "netinet/in_var.h"
 #include "netinet/ip.h"
+#include "netinet/in_pcb.h"
 #include "process/scheduler.h"
 #include "stdio.h"
 #include "string.h"
@@ -49,6 +50,7 @@
 #include "sys/mbuf.h"
 #include "sys/module.h"
 #include "sys/socket.h"
+#include "sys/socketvar.h"
 #include "system/printk.h"
 #include "system/syscall.h"
 #include "version.h"
@@ -300,13 +302,61 @@ kmain(boot_info_t* boot_informations)
 
   //  __asm__("hlt");
 
+  extern int sosend(
+    struct socket*, struct mbuf*, char*, int, struct mbuf*, int);
+  extern int socreate(
+    unsigned char, struct socket**, unsigned char, unsigned char);
+  struct socket* oo;
+  socreate(AF_INET, &oo, SOCK_DGRAM, 0);
+  oo->snd.maxlen = 6900;
+  struct mbuf* ei = mgethdr(MT_DATA);
+  struct sockaddr_in socker = {
+    .addr = 0xff,
+  };
+  M_ALIGN(ei, sizeof(struct sockaddr_in));
+  memcpy(ei->m_data, &socker, sizeof(struct sockaddr_in));
+  char* vaa = kmalloc(200);
+  strcpy(vaa, "lolololol");
+  sosend(oo, ei, vaa, 150, 0, 0);
+  char lolz[100] = "terve";
+  sosend(oo, ei, lolz, 100, 0, 0);
+
+  extern int soreceive(struct socket * so, char* buf, int blen, int* flags);
+  char terve[200];
+  soreceive(oo, terve, 200, 0);
+
+  struct inpcb* in_pcblookup(struct inpcb * head,
+                             unsigned long laddr,
+                             unsigned short lport,
+                             unsigned long faddr,
+                             unsigned short fport,
+                             int flags);
+
+  struct inpcb i1, i2, i3;
+
+  // socket 1
+  i1.laddr = INADDR_ANY;
+  i1.lport = 7000;
+  i1.faddr = 0x7f000001;
+  i1.fport = 80;
+  i1.next = &i2;
+
+  // socket 2
+
+  i2.laddr = 0x7f000001;
+  i2.lport = 6900;
+  i2.faddr = 0x7f000001;
+  i2.fport = 80;
+
+  in_pcblookup(&i1, 0x7f000001, 7000, 0x7f000001, 80, 0);
+
   //==========================================================================
   // The Global Descriptor Table (GDT) is a data structure used by Intel
   // x86-family processors starting with the 80286 in order to define the
-  // characteristics of the various memory areas used during program execution,
-  // including the base address, the size, and access privileges like
-  // executability and writability. These memory areas are called segments in
-  // Intel terminology.
+  // characteristics of the various memory areas used during program
+  // execution, including the base address, the size, and access privileges
+  // like executability and writability. These memory areas are called
+  // segments in Intel terminology.
   pr_notice("Initialize Global Descriptor Table (GDT)...\n");
   printf("Initialize GDT...");
   init_gdt();
@@ -454,14 +504,14 @@ kmain(boot_info_t* boot_informations)
   printf("Setting up keyboard driver...");
   keyboard_initialize();
   print_ok();
-  // Set the keymap type.
+// Set the keymap type.
 #ifdef USE_KEYMAP_US
   set_keymap_type(KEYMAP_US);
 #else
   set_keymap_type(KEYMAP_IT);
 #endif
 
-  //==========================================================================
+//==========================================================================
 #if 0
      pr_notice("Install the mouse.\n");
      printf(" * Setting up mouse driver...");

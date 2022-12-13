@@ -7,6 +7,9 @@
 #define AF_INET 2
 #define AF_LINK 18
 
+#define SO_REUSEPORT 1
+#define SO_REUSEADDR 2
+
 struct sockaddr
 {
   char len;

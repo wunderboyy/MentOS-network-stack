@@ -1,0 +1,88 @@
+#include "mem/slab.h"
+#include "sys/errno.h"
+#include "netinet/ip.h"
+#include "netinet/in_pcb.h"
+#include "netinet/in.h"
+#include "sys/socketvar.h"
+#include "string.h"
+
+int
+in_pcballoc(struct socket* so, struct inpcb* head)
+{
+  struct inpcb* in;
+
+  in = kmalloc(10);
+  if (in == NULL)
+    return ENOBUFS;
+  memset(in, 0, sizeof(struct inpcb));
+
+  in->head = head;
+  in->so = so;
+  so->pcb = in;
+  return 0;
+}
+
+int
+in_pcbdealloc(struct inpcb* in)
+{
+  in->so->pcb = NULL;
+  kfree(in);
+  return 0;
+}
+
+/*
+  Lookup up a pcb that matches best with the arguments passed
+
+  1. if local ports dont match, skip
+  2. if either addresses is a wildcard, wildcard++
+  3. if neither are wildcards, they have to be equal or else skip
+  5. if both are wildcards, do nothing
+*/
+struct inpcb*
+in_pcblookup(struct inpcb* head,
+             unsigned long laddr,
+             unsigned short lport,
+             unsigned long faddr,
+             unsigned long fport,
+             int flags)
+{
+  struct inpcb *in, *match;
+  int wildcard, matchwild = 3;
+
+#define WILDCARD 1
+
+  for (in = head; in; in = in->next) {
+    if (in->lport != lport)
+      continue;
+    wildcard = 0;
+
+    // socket listening on specific address
+    if (in->laddr != INADDR_ANY) {
+      // looking for socket with any local address
+      if (laddr == INADDR_ANY)
+        wildcard++;
+      // looking for specific local address
+      else if (laddr != in->laddr)
+        continue;
+    } else if (laddr != INADDR_ANY)
+      wildcard++;
+
+    // socket connected to specific address
+    if (in->faddr != INADDR_ANY) {
+      // looking for socket with any foreign address
+      if (faddr == INADDR_ANY)
+        wildcard++;
+      // for foreign, ports have to be equal aswell
+      else if (faddr != in->faddr || fport != in->fport)
+        continue;
+    } else if (faddr != INADDR_ANY)
+      wildcard++;
+
+    if (flags & WILDCARD && wildcard < matchwild) {
+      match = in;
+      if ((matchwild = wildcard) == 0)
+        return match;
+    }
+  }
+  return match;
+}

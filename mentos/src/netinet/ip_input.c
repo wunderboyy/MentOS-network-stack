@@ -103,7 +103,7 @@ next:
   // TODO: check multicast groups for a match
 
   if (!ipforwarding) {
-    mfree_m(m);
+    // mfree_m(m);
   } else {
     // TODO: ip_forward()
   }
@@ -116,6 +116,6 @@ ours:
   inetsw[ip_protox[ip->proto]].input();
   goto next;
 fail:
-  mfree_m(m);
+  //  mfree_m(m);
   goto next;
 }

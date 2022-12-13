@@ -15,13 +15,15 @@ kk()
   return 0;
 }
 
-struct protosw inetsw[] = { { &inetdomain, 0, 0, ipinit },
+struct protosw inetsw[] = { { &inetdomain, 0, 0, 0, ipinit },
                             {
                               &inetdomain,
                               SOCK_DGRAM,
                               IPPROTO_UDP,
+                              PR_ATOMIC,
                               0,
                               0,
+                              kk,
                               kk,
                             },
                             { &inetdomain, SOCK_STREAM, IPPROTO_TCP },

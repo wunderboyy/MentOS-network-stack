@@ -1,6 +1,7 @@
 #include "mem/slab.h"
 #include "string.h"
 #include "sys/errno.h"
+#include "sys/mbuf.h"
 #include "sys/protosw.h"
 #include "sys/socket.h"
 #include "sys/socketvar.h"
@@ -34,5 +35,97 @@ socreate(unsigned char domain,
 int
 sobind(struct socket* so, struct mbuf* m)
 {
+  // TODO: splnet()
   return so->proto->usrreq(so, PRU_BIND, NULL, m, NULL);
+}
+
+// collect buf to a new mbuf chain and send it to the protocol
+// to holds the destination sockaddr
+int
+sosend(struct socket* so,
+       struct mbuf* to,
+       char* buf,
+       int blen,
+       struct mbuf* top,
+       int flags)
+{
+  struct mbuf **mp, *m, *n;
+  int dontroute = 0, mlen, len, space, resid = blen, atomic = soatomic(so);
+
+  // enable routing for this send
+  if (flags & MSG_DONTROUTE && (so->options & SO_DONTROUTE) == 0)
+    dontroute = 1;
+
+  // TODO: lock snd
+
+  if (resid > so->snd.maxlen)
+    return EINVAL;
+
+#define min(x, y) ((x) < (y) ? (x) : (y))
+
+  space = sospace(so);
+  mp = &top;
+  do {
+    if (top == NULL) {
+      m = mget(MT_DATA);
+      mlen = MHLEN;
+    } else {
+      m = mget(MT_DATA);
+      mlen = MLEN;
+    }
+
+    len = min(min(mlen, resid), space);
+
+    // leave space for protocol headers for first mbuf in chain
+    if (top == NULL)
+      M_ALIGN(m, len);
+
+    space -= len;
+
+    // TODO: uiomove
+
+    memcpy(m->m_data, buf, len);
+    buf += len;
+
+    m->m_len = len;
+    *mp = m;
+    top->m_pkthdr.len += len;
+    mp = &m->m_next;
+  } while (space && (resid -= len));
+
+  if (dontroute)
+    so->options = SO_DONTROUTE;
+  // TODO: splnet()
+  so->proto->usrreq(so, PRU_SEND, top, to, NULL);
+
+  // TODO: unlock snd
+
+  if (top)
+    mfree_m(top);
+  return 0;
+}
+
+int
+soreceive(struct socket* so, char* buf, int blen, int* flags)
+{
+  struct mbuf *m, *m2;
+  int len, off = 0, resid = blen;
+
+  if (so->rcv.m == NULL || so->rcv.len < blen) {
+    // TODO: wait()
+    return 0;
+  }
+
+  m = so->rcv.m;
+loop:
+  len = min(resid, m->m_len);
+  memcpy(buf, m->m_data, len);
+  resid -= len;
+  buf += len;
+
+  mfree(m, &m2);
+  if (resid && (m = m2))
+    goto loop;
+
+  return 0;
 }

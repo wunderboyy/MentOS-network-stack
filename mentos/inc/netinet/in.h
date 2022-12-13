@@ -1,9 +1,5 @@
 
 
-#define IP_FORWARDING 1     // this packet is being forwarded
-#define IP_RAWOUTPUT 2      // packet contains a preconstructed ip header
-#define IP_ROUTETOIF 0x0010 // route packet straight to an interface
-
 #define IPPROTO_MAX 256
 #define IPPROTO_RAW 255
 
@@ -11,6 +7,9 @@
 #define IPPROTO_IGMP 2
 #define IPPROTO_TCP 6
 #define IPPROTO_UDP 17
+
+#define IPPORT_RESERVED 1024
+#define IPPORT_USERRESERVED 5000
 
 struct sockaddr_in
 {
